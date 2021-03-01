@@ -2,9 +2,6 @@ package com.idlefish.flutterboost.containers;
 
 
 import android.app.Activity;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LifecycleRegistry;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -15,13 +12,26 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.*;
-import android.widget.*;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LifecycleRegistry;
+
 import com.idlefish.flutterboost.FlutterBoost;
 import com.idlefish.flutterboost.XFlutterView;
 import com.idlefish.flutterboost.XPlatformPlugin;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.flutter.Log;
 import io.flutter.embedding.android.DrawableSplashScreen;
 import io.flutter.embedding.android.FlutterView;
@@ -30,11 +40,7 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.plugin.platform.PlatformPlugin;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-public class BoostFlutterActivity extends Activity
+public class BoostFlutterActivity extends FragmentActivity
         implements FlutterActivityAndFragmentDelegate.Host,
         LifecycleOwner {
 
@@ -130,13 +136,13 @@ public class BoostFlutterActivity extends Activity
     private LifecycleRegistry lifecycle;
 
     public BoostFlutterActivity() {
-        lifecycle = new LifecycleRegistry(this);
+//        lifecycle = new LifecycleRegistry(this);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         switchLaunchThemeForNormalTheme();
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         super.onCreate(savedInstanceState);
 
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE);
@@ -284,11 +290,12 @@ public class BoostFlutterActivity extends Activity
         super.onDestroy();
         delegate.onDestroyView();
         delegate.onDetach();
-//        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY);
+        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
         delegate.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -353,6 +360,9 @@ public class BoostFlutterActivity extends Activity
     @Override
     @NonNull
     public Lifecycle getLifecycle() {
+        if (lifecycle == null) {
+            lifecycle = new LifecycleRegistry(this);
+        }
         return lifecycle;
     }
 
@@ -478,7 +488,7 @@ public class BoostFlutterActivity extends Activity
     }
 
     @Override
-    public  Map<String ,Object> getContainerUrlParams() {
+    public Map<String, Object> getContainerUrlParams() {
 
         if (getIntent().hasExtra(EXTRA_PARAMS)) {
             SerializableMap serializableMap = (SerializableMap) getIntent().getSerializableExtra(EXTRA_PARAMS);
@@ -503,6 +513,4 @@ public class BoostFlutterActivity extends Activity
          */
         transparent
     }
-
-
 }
